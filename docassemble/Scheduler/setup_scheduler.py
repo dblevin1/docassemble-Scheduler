@@ -119,14 +119,14 @@ def do_scheduler_setup():
         load_daconfig()
 
     jobs = dict(daconfig).get('scheduler', {})
-    '''logger_object = get_logger()
     if jobs.get('log level', False):
+        logger_object = get_logger()
         loglevel = str(jobs.pop('log level')).upper()
-        if loglevel in ('DEBUG', 'INFO', 'WARNING', 'ERROR'):
+        if loglevel in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
             loglevelName = logging.getLevelName(loglevel)
             logger_object.setLevel(loglevelName)
         else:
-            log("Invalid log level, defaulting to INFO")'''
+            log("Invalid log level, defaulting to INFO")
 
     if len(jobs) > 0:
         docassemble_log("Scheduler is starting...")
@@ -147,6 +147,23 @@ def do_scheduler_setup():
             if 'execute_on_setup' in job_data:
                 job_data.pop('execute_on_setup')
                 need_trigger_now = True
+            func_args = []
+            func_kwargs = {}
+            if 'args' in job_data:
+                func_args = job_data.pop('args')
+                try:
+                    func_args = list(func_args)
+                except:
+                    log(f"Failed to parse {job_name} args")
+                    func_args = []
+            if 'kwargs' in job_data:
+                func_kwargs = job_data.pop('kwargs')
+                try:
+                    func_kwargs = dict(func_kwargs)
+                except:
+                    log(f"Failed to parse {job_name} kwargs")
+                    func_kwargs = {}
+
             '''existing_tz = None
             if auto_execute_late_job:
                 try:
@@ -162,8 +179,15 @@ def do_scheduler_setup():
                         log(f"Executing stale job now: {job_name}")
                         need_trigger_now = True'''
 
-            job = bg_scheduler.add_job(scheduler_tasks.call_func_with_context, id=job_name, trigger=job_type, args=[
-                job_name], replace_existing=True, **job_data)
+            job = bg_scheduler.add_job(
+                scheduler_tasks.call_func_with_context,
+                id=job_name,
+                trigger=job_type,
+                args=[job_name, *func_args],
+                kwargs=func_kwargs,
+                replace_existing=True,
+                **job_data
+            )
             # if need_trigger_now:
             #    job.modify(next_run_time=datetime.datetime.now(existing_tz))
         bg_scheduler.start()

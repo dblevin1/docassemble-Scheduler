@@ -4,6 +4,7 @@ import logging
 import datetime
 import tempfile
 import json
+import sys
 from bs4 import BeautifulSoup
 import traceback
 from docassemble.base.config import daconfig
@@ -32,14 +33,10 @@ def get_logger():
         # rotating_file_handler = logging.handlers.RotatingFileHandler(
         rotating_file_handler = logging.handlers.TimedRotatingFileHandler(
             filename=log_file,
-            # mode='a',
-            # maxBytes=5*1024*1024,
-            when='D',
-            interval=1,
+            when='midnight',
             backupCount=7,
             encoding=None,
             delay=True,
-            atTime=datetime.time(0, 0)
         )
         rotating_file_handler.setFormatter(log_formatter)
 
@@ -66,10 +63,24 @@ def log(msg, lvl='info'):
 
     if str(lvl).lower() == 'critical':
         try:
-            trace = "TRACEBACK:\n" + "".join(traceback.format_stack())
-            error_notification(Exception(msg), trace=trace)
+            # If we were already handling an exception include that
+            etype, value, ex_tb = sys.exc_info()
+            trace = ""
+            if value is not None:
+                trace = "Original Exception:\n"
+                trace += traceback.format_exc() + "\n"
+            trace += "Current Stack:\n" + "".join(traceback.format_stack())
+            if value is not None:
+                error_notification(value, message=f"{value}\nMessage: {msg}\n", trace=trace)
+            else:
+                error_notification(Exception(msg), trace=trace)
         except Exception as my_ex:
             log(f"Failed to send email for a critical log entry:{type(my_ex)}:{my_ex}")
+            try:
+                error_notification(
+                    Exception(msg), message=f"{msg}\n\nFAILED TO SEND EMAIL for critical log entry:{type(my_ex)}:{my_ex}")
+            except:
+                pass
 
 
 def set_schedule_logger():
@@ -96,8 +107,20 @@ def my_error_notification(err, message=None, history=None, trace=None, referer=N
     if message is None:
         errmess = str(err)
     else:
-        errmess = message
-
+        errmess = str(message).replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;').replace('"', '&quot;')
+    try:
+        if not worker_controller.loaded:
+            worker_controller.initialize()
+            worker_controller.set_request_active(False)
+        the_key = 'myerrornotification:' + str(err.__class__.__name__)
+        existing = worker_controller.r.get(the_key)
+        if existing == errmess:
+            return
+        # 300 sec = 5 minutes
+        worker_controller.r.set(the_key, errmess, ex=300)
+    except Exception as my_ex:
+        log(f"Error setting 'myerrornotification' redis value:{type(my_ex)}:{my_ex}")
+        raise
     json_filename = None
     if the_vars is not None and len(the_vars):
         try:

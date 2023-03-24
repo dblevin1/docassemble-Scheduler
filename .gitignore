@@ -3,3 +3,5 @@
 *.pyc
 *egg-info
 temp*
+**/tasks/*
+!**/tasks/*test*

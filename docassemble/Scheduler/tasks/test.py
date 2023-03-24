@@ -1,6 +1,5 @@
 import os
 import datetime
-
 from docassemble.Scheduler.scheduler_logger import log
 
 
@@ -14,3 +13,7 @@ def heartbeat():
     with open('/tmp/heartbeat_schedule.log', 'a+') as scd_log:
         scd_log.write(now_str + "\n")
     log("heartbeat=" + now_str)
+
+
+def test_arbitrary_params(*pargs, **kwargs):
+    log(f"{pargs=} {kwargs=}")
