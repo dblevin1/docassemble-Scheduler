@@ -38,17 +38,6 @@ from docassemble.webapp.worker_common import workerapp, bg_context, worker_contr
 __all__ = []
 bg_scheduler = None
 
-'''
-TODO: ----need to add tasks----
-independent_crontab_tasks
-sync groups to roles
-syncFiles
-rclone controller read
-rclone controller write
-db_backup
-cp rclone.conf to /mnt
-'''
-
 
 def my_listener(event):
     if event.exception:
