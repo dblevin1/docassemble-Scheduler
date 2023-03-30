@@ -168,7 +168,8 @@ def my_error_notification(err, message=None, history=None, trace=None, referer=N
                 with open(json_filename, 'r', encoding='utf-8') as fp:
                     msg.attach('variables.json', 'application/json', fp.read())
             return my_send_email(msg)
-    except:
+    except Exception as my_ex:
+        log(f"Failed to send email for a critical log entry:{err=} '{my_ex}'")
         pass
     return False
 
