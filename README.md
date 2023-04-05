@@ -108,6 +108,21 @@ scheduler:
 The above configuration run `test_arbitrary_params` which will log any parameters passed to it. The above configuration will log: 
 `pargs=('positional_value_1', 'positional_value_2') kwargs={'optional_param': 'optional_value'}`
 
+# Custom Context
+
+Setting up a custom context is advanced but powerful, it allowes code to be executed before and after every job. The value for the tag `contextmanager` should be a module in the tasks directory like below, or it can be a full package name with the class such as `docassemble.Scheduler.tasks.test_context.SchedulerContext` this is equal to `test_context.SchedulerContext`. The class should implement `__enter__` and `__exit__`.
+Example Config:
+
+```yml
+scheduler:
+    test.heartbeat:
+        type: interval
+        contextmanager: test_context.SchedulerContext
+        minutes: 1
+
+```
+It should be noted whether or not a custom context is supplied a context is already used which is provided by docassemble. It is the same context manager that is used for docassemble Celery tasks. See [the docassemble code here](https://github.com/jhpyle/docassemble/blob/2aa0178467e1902d2598d3066dfcca3308524da9/docassemble_webapp/docassemble/webapp/worker_common.py#L140)
+
 ## Author
 
 System Administrator, admin@admin.com

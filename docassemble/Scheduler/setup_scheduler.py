@@ -119,7 +119,8 @@ def do_scheduler_setup():
 
     if len(jobs) > 0:
         docassemble_log("Scheduler is starting...")
-        log("Scheduler is starting...")
+        log("Scheduler is starting...", 'debug')
+        log(f"Scheduler config:{jobs}", 'debug')
 
         bg_scheduler.remove_all_jobs()
         for job_name in jobs:
@@ -129,13 +130,6 @@ def do_scheduler_setup():
             job_data = copy.copy(jobs[job_name])
             job_data = dict(job_data)
             job_type = job_data.pop('type')
-            auto_execute_late_job = False
-            need_trigger_now = False
-            if 'auto_execute_late_job' in job_data:
-                auto_execute_late_job = job_data.pop('auto_execute_late_job')
-            if 'execute_on_setup' in job_data:
-                job_data.pop('execute_on_setup')
-                need_trigger_now = True
             func_args = []
             func_kwargs = {}
             if 'args' in job_data:
@@ -152,21 +146,8 @@ def do_scheduler_setup():
                 except:
                     log(f"Failed to parse {job_name} kwargs")
                     func_kwargs = {}
-
-            '''existing_tz = None
-            if auto_execute_late_job:
-                try:
-                    # lookup_job calls reconstitute_job which needs the function to exist
-                    # May throw LookupError if it doesn't exist
-                    existing_job = jobstore.lookup_job(job_name)
-                except:
-                    existing_job = None
-                if existing_job is not None:
-                    existing_tz = existing_job.next_run_time.tzinfo
-                    if existing_job.next_run_time <= datetime.datetime.now(existing_tz):
-                        # Need to execute stale job now
-                        log(f"Executing stale job now: {job_name}")
-                        need_trigger_now = True'''
+            if 'contextmanager' in job_data:
+                func_kwargs['contextmanager'] = job_data.pop('contextmanager')
 
             job = bg_scheduler.add_job(
                 scheduler_tasks.call_func_with_context,
