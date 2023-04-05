@@ -163,7 +163,7 @@ def do_scheduler_setup():
         bg_scheduler.start()
         log(f"Started scheduler with '{len(jobs)}' jobs", 'debug')
         for idx, job in enumerate(bg_scheduler.get_jobs()):
-            log(f"Job '{idx+1}' '{job.id}' next_run_time={job.next_run_time.strftime('%m/%d/%y %I:%M %p')}", 'debug')
+            log(f"Job '{idx+1}' '{job.id}' next_run_time={job.next_run_time.strftime('%m/%d/%y %I:%M %p')}")
 
     else:
         docassemble_log(f"Background scheduler no jobs started")
