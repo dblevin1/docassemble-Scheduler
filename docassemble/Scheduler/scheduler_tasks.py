@@ -1,27 +1,12 @@
 # do not pre-load
 import importlib
-import datetime
-import logging
 import os
-import subprocess
-import pprint
-import json
-import sys
 if __name__ == "__main__":
     import docassemble.base.config
     #docassemble.base.config.load(arguments=remaining_arguments, in_cron=True)
     docassemble.base.config.load()
-from docassemble.base.config import daconfig
-from docassemble.base.util import as_datetime
-from docassemble.HappyAcres import db_orm_med_administration
-from docassemble.HappyAcres import db_orm_client
-from docassemble.HappyAcres import db_orm_medication
-from docassemble.HappyAcres import db_orm_audit
-from docassemble.HappyAcres import db_orm_log
-from docassemble.HappyAcres import db_orm_submission
-from docassemble.HappyAcres.medication_checker import Medication_Checker
-from docassemble.HappyAcres.location_handler import Locations
-from docassemble.webapp.worker_common import workerapp, bg_context, worker_controller
+
+from docassemble.webapp.worker_common import bg_context, worker_controller
 try:
     from .scheduler_logger import log, docassemble_log, set_schedule_logger
 except:
@@ -118,5 +103,4 @@ elif __name__ == '__main__':
     # import_tasks()
     # call_func_with_context('test.heartbeat')
     # call_func_with_context('med_test.get_meds')
-    call_func_with_context('docassemble.HappyAcres.tasks.missing_medlogs.missing_medlogs')
     print()
