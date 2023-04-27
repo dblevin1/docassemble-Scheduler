@@ -104,3 +104,6 @@ elif __name__ == '__main__':
     # call_func_with_context('test.heartbeat')
     # call_func_with_context('med_test.get_meds')
     print()
+    call_func_with_context('docassemble.HappyAcres.tasks.scheduler_tasks.check_db',
+                           contextmanager='docassemble.HappyAcres.tasks.utils.SchedulerDatabaseContext')
+    print()
