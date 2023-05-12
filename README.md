@@ -1,6 +1,7 @@
 # docassemble.Scheduler
 
-This is a docassemble extension that uses [APScheduler](https://apscheduler.readthedocs.io/) to setup a scheduler
+This is a docassemble extension that uses [APScheduler](https://apscheduler.readthedocs.io/) to setup a scheduler that is interview independent.
+The scheduling system built into docassemble needs a existing interview session with allow_cron=True to work and only has hourly granularity. This package allows you to setup a scheduler with fine grain control of the execution params.
 
 ## Usage
 
@@ -27,7 +28,9 @@ scheduler:
             optional_param: optional_value
 ```
 
-Write your own python functions by creating a file in the [tasks](https://github.com/dblevin1/docassemble-Scheduler/tree/master/docassemble/Scheduler/tasks) folder. See Below on how to configure it.
+You may either install this package directly on docassemble using the package page and refering to this repos url. Then create your own python files in a different package (or playground) and add them to the configuration by refering to the package name, file name, and function name.
+
+Or you can fork this repo and write your own functions by creating a python file in the [tasks](https://github.com/dblevin1/docassemble-Scheduler/tree/master/docassemble/Scheduler/tasks) folder. Then uploading your fork to docassemble.
 
 ## Scheduler Logger
 
