@@ -49,7 +49,7 @@ with open("VERSION") as file:
     current_version = file.readlines()[0]
 
 setup(name='docassemble.Scheduler',
-      version=str(current_version),
+      version=str(current_version).strip(),
       description=('A docassemble extension.'),
       long_description='# docassemble.Scheduler\n\nA docassemble extension.\n\n## Author\n\nSystem Administrator, admin@admin.com\n\n',
       long_description_content_type='text/markdown',
