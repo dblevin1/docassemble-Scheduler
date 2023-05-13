@@ -55,44 +55,6 @@ def my_listener(event):
                            trace=msg_trace)
 
 
-def call_task_func(job_func_name):
-    log(f"Running '{job_func_name}'")
-    import subprocess
-    #from . import scheduler_tasks
-    #from docassemble.webapp.app_object import app
-    #import docassemble.base.functions
-    func_name = re.sub(r'([^a-zA-Z])', '', job_func_name)
-    python_path = sys.executable
-    tasks_path = os.path.join(os.path.dirname(__file__), 'scheduler_tasks.py')
-
-    args = [
-        python_path,
-        tasks_path,
-        func_name
-    ]
-    proc = subprocess.run(args, capture_output=True)
-    log(proc)
-    if proc.returncode:
-        procerr = proc.stderr.decode('utf-8')
-        clean_trace = str(procerr).replace('\n', '')
-        log('scheduler: The subprocess job crashed:' + f"{ clean_trace}")
-        goterr = procerr.strip().split('\n')
-        excname = goterr[-1]
-        msg_body = excname + "\n\nSTDOUT:" + proc.stdout.decode('utf-8')
-        error_notification(Exception(excname), msg_body,
-                           trace=procerr, history='<p><b>Done.</b></p>')
-    '''with app.app_context():
-        #my_user = None
-        # for user in UserModel.query.options(db.joinedload(UserModel.roles)).all():
-        #    if user.nickname == 'admin':
-        #        my_user = user
-        #        break
-        with app.test_request_context(base_url="http://localhost/", path="interview"):
-            #login_user(my_user, remember=False)
-            # globals()[job_name]()
-            getattr(scheduler_tasks, job_func_name)()'''
-
-
 def do_scheduler_setup():
     from . import scheduler_tasks
     #log("STACK:" + str(traceback.format_stack()))
