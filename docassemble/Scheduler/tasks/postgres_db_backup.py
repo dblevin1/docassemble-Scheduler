@@ -9,21 +9,12 @@ if not daconfig:
     load_daconfig()
 
 
-def run():
-    now = datetime.now()
-    backup_location = daconfig.get('custom db backup location')
-    if not backup_location:
-        log("Configuration 'custom db backup location' not found, not backing up anything", 'error')
-        return
-    databases_to_backup = daconfig.get('custom db backup')
-    if not databases_to_backup:
-        log("Configuration 'custom db backup' not found, not backing up anything", 'error')
-        return
-        
+def run(db_keys_to_backup, backup_location):
     log("Starting custom database backup")
-    if isinstance(databases_to_backup, str):
-        databases_to_backup = [databases_to_backup]
-    databases_to_backup = list(databases_to_backup)
+    now = datetime.now() 
+    if isinstance(db_keys_to_backup, str):
+        db_keys_to_backup = [db_keys_to_backup]
+    databases_to_backup = list(db_keys_to_backup)
 
     for database_to_backup in databases_to_backup:
         database_config = daconfig.get(database_to_backup)
