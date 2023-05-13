@@ -69,7 +69,8 @@ def _get_custom_context_cls(contextmanager):
 
 def _call_func(job_name, *pargs, **kwargs):
     retVal = None
-    job_func = _import_module_and_get_func(job_name)
+    func_name = str(job_name).split(' ')[0]
+    job_func = _import_module_and_get_func(func_name)
     if job_func:
         retVal = job_func(*pargs, **kwargs)
     else:

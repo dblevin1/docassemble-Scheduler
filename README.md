@@ -111,6 +111,29 @@ scheduler:
 The above configuration run `test_arbitrary_params` which will log any parameters passed to it. The above configuration will log: 
 `pargs=('positional_value_1', 'positional_value_2') kwargs={'optional_param': 'optional_value'}`
 
+# Calling the same Function
+
+If you need to utilize the same function for different scheduled event just put a space and some characters at the end, ie:
+```yml
+scheduler:
+  postgres_db_backup.run 1:
+    type: cron
+    hour: 4
+    minute: 0
+    args:
+      - ['db', 'data db']
+      - "/tmp/docassemble_db_backups/"
+  postgres_db_backup.run 2:
+    type: cron
+    hour: 4
+    minute: 30
+    args:
+      - ['db', 'data db']
+      - "/tmp/docassemble_db_backups/"
+```
+These two task are the same but will be logged as `postgres_db_backup.run 1` and `postgres_db_backup.run 2`. Any characters after the space are ignored and only used to differentiate the tasks in the scheduling system.
+
+
 # Custom Context
 
 Setting up a custom context is advanced but powerful, it allowes code to be executed before and after every job. The value for the tag `contextmanager` should be a module in the tasks directory like below, or it can be a full package name with the class such as `docassemble.Scheduler.tasks.test_context.SchedulerContext` this is equal to `test_context.SchedulerContext`. The class should implement `__enter__` and `__exit__`.
