@@ -59,7 +59,7 @@ setup(name='docassemble.Scheduler',
       url='',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=[],
+      install_requires=['apscheduler'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/Scheduler/', package='docassemble.Scheduler'),
       )
