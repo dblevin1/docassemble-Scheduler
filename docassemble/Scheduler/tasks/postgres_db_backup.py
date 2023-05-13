@@ -10,6 +10,7 @@ if not daconfig:
 
 
 def run():
+    now = datetime.now()
     backup_location = daconfig.get('custom db backup location')
     if not backup_location:
         log("Configuration 'custom db backup location' not found, not backing up anything", 'error')
@@ -28,12 +29,17 @@ def run():
         database_config = daconfig.get(database_to_backup)
         if not database_config:
             log(f"Database '{database_to_backup}' not found in the configuration", 'error')
-        backup_status = do_data_db_backup(database_config, backup_location)
+        backup_status = do_data_db_backup(database_config)
+        if backup_status:
+            db_name = backup_status[0] 
+            temp_dir = backup_status[1]
+            tar_file(db_name, temp_dir.name, backup_location, now)
+            temp_dir.close()
         if not backup_status:
             log(f"Failed to backup database '{database_to_backup}', skipping", 'error')
     log("Finshed custom database backup")
 
-def do_data_db_backup(database_config: dict, backup_location, use_tar=True):
+def do_data_db_backup(database_config: dict):
     if not database_config:
         log("Error loading database config")
         return False
@@ -46,12 +52,13 @@ def do_data_db_backup(database_config: dict, backup_location, use_tar=True):
         log("Error user, name, pass from config", 'error')
         return False
 
-    backup_file = tempfile.NamedTemporaryFile()
+    temp_dir = tempfile.TemporaryDirectory()
+    sql_file = os.path.join(temp_dir.name, db_name)
     custom_env = os.environ.copy()
     custom_env['PGPASSWORD'] = db_pass
     try:
         log("Running pg_dump command...")
-        pg_process = subprocess.run(f'pg_dump -F c --username="{db_user}" -h {db_host} "{db_name}" -f "{ backup_file.name }"', shell=True,
+        pg_process = subprocess.run(f'pg_dump -F c --username="{db_user}" -h {db_host} "{db_name}" -f "{ sql_file }"', shell=True,
                                     stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE, env=custom_env)
     except:
         log("Caught Exception, Check logs", 'error')
@@ -60,42 +67,31 @@ def do_data_db_backup(database_config: dict, backup_location, use_tar=True):
     if pg_process.returncode != 0:
         log(f"pg_dump error:{pg_process.stdout}{pg_process.stderr}|{pg_process}", 'critical')
         return False
+    return (db_name, temp_dir)
     
-    if use_tar:
-        tar_file = tempfile.NamedTemporaryFile(suffix='.tar.gz')
-        tar_file_name = tar_file.name
-        tar_file.close()
-        tar_path = os.path.join(backup_location, f'{ datetime.now().strftime(f"%Y/%m/%d.%H.%M.%S_{db_name}") }.tar.gz')
-        os.makedirs(os.path.dirname(tar_path), exist_ok=True)
-        try:
-            log("Tar sql file...")
-            tar_process = subprocess.run(f'tar -czf "{tar_file_name}" "{backup_file.name}"', shell=True,
-                                            stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE)
-        except:
-            log("Caught Exception, Check logs", 'error')
-            raise
 
-        if tar_process.returncode != 0:
-            log(f"Tar error:{tar_process.stdout}{tar_process.stderr}", 'error')
-            return False
-        log("Moving tar file")
-        shutil.move(tar_file_name, tar_path)
-    else:
-        zip_path = os.path.join(backup_location, f'{ datetime.now().strftime(f"%Y/%m/%d.%H.%M.%S_{db_name}") }.zip')
-        os.makedirs(os.path.dirname(zip_path), exist_ok=True)
-        try:
-            log("Zipping sql file...")
-            zip_process = subprocess.run(f'zip -A -j "{zip_path}" "{backup_file.name}"', shell=True,
-                                            stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE)
-        except:
-            log("Caught Exception, Check logs", 'error')
-            raise
+def tar_file(db_name, temp_dir_name, backup_location, now=None):
+    if not now:
+        now = datetime.now()
+    tar_file_name = str(db_name) + '.tar.gz'
+    try:
+        log("Tar sql file...")
+        args = f'tar -czf "{tar_file_name}" "{db_name}"'
+        log(f"Running tar with args: {args}")
+        tar_process = subprocess.run(args, shell=True,
+                                        stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE,
+                                        cwd=temp_dir_name)
+    except:
+        log("Caught Exception, Check logs", 'error')
+        raise
 
-        if zip_process.returncode != 0:
-            log(f"zip error:{zip_process.stdout}{zip_process.stderr}", 'error')
-            return False
-
-    backup_file.close()
+    if tar_process.returncode != 0:
+        log(f"Tar error:{tar_process.stdout}{tar_process.stderr}", 'error')
+        return False
+    log("Moving tar file")
+    to_path = os.path.join(backup_location, now.strftime(f"%Y/%m/%d_%H.%M.%S_{db_name}.tar.gz"))
+    os.makedirs(os.path.dirname(to_path), exist_ok=True)
+    shutil.move(os.path.join(temp_dir_name, tar_file_name), to_path)
     return True
     
 
