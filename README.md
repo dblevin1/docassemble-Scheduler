@@ -111,6 +111,19 @@ scheduler:
 The above configuration run `test_arbitrary_params` which will log any parameters passed to it. The above configuration will log: 
 `pargs=('positional_value_1', 'positional_value_2') kwargs={'optional_param': 'optional_value'}`
 
+## Persistent job store
+
+Using a persistent job store will allow the scheduler to track job execution time and determine if a job was missed across restarts. On the scheduler startup (which happens everytime docassemble restarts) if a job execution time was missed it will be rescheduled to run immediately. To use docassembles database as a persistent job store include `use docassemble database: True` like the below snippet.
+
+**WARNING:** It is disabled by default because the scheduler adds a new table to the docassemble database called "apscheduler_jobs". Which may cause unintended side effects when docassemble tries to upgrade/change its database structure. 
+```yml
+scheduler:
+  use docassemble database: True
+  test.heartbeat:
+    type: interval
+    minutes: 1
+```
+
 # Calling the same Function
 
 If you need to utilize the same function for different scheduled event just put a space and some characters at the end, ie:
