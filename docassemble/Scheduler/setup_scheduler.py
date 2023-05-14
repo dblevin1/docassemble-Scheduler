@@ -18,26 +18,21 @@ from bs4 import BeautifulSoup
 #from docassemble.webapp.server import error_notification as da_error_notification
 #from docassemble.webapp.server import app
 from docassemble.webapp.app_object import app
-from docassemble.webapp.user_database import alchemy_url
+from docassemble.webapp.user_database import alchemy_url as custom_alchemy_url
+from docassemble.webapp.database import alchemy_connection_string
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.util import datetime_to_utc_timestamp, utc_timestamp_to_datetime
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from docassemble.base.config import daconfig
 from docassemble.base.config import load as load_daconfig
-from docassemble.webapp.da_flask_mail import Message
-import docassemble.base.functions
-from .scheduler_logger import log, docassemble_log, get_logger, set_schedule_logger, error_notification
-from docassemble.webapp.worker_common import workerapp, bg_context, worker_controller
-#from .schedule_logger import set_schedule_logmessage
-#from .schedule_logger import scheduler_the_logmessage as log
+from .scheduler_logger import log, docassemble_log, get_logger, set_schedule_logger, error_notification, USING_SCHEDULE_LOGGER
 
 # Do not import this file anywhere
 
 __all__ = []
 bg_scheduler = None
-
 
 def my_listener(event):
     if event.exception:
@@ -55,36 +50,58 @@ def my_listener(event):
                            trace=msg_trace)
 
 
+def job_missed_listener(event):
+    log(f"Missed job '{event.job_id}' execution event of '{ event.scheduled_run_time.strftime('%m/%d/%y %I:%M %p') }'")
+
 def do_scheduler_setup():
+    global bg_scheduler
     from . import scheduler_tasks
-    #log("STACK:" + str(traceback.format_stack()))
-    #sqlurl = alchemy_url('data db')
-    #jobstore = SQLAlchemyJobStore(sqlurl)
-    #jobstores = {'default': jobstore}
-    #bg_scheduler = BackgroundScheduler(jobstores=jobstores)
-    #executors = {'default': ProcessPoolExecutor(5)}
-    #executors = executors
-    bg_scheduler = BackgroundScheduler()
-    bg_scheduler.add_listener(my_listener, EVENT_JOB_ERROR)
-    if not daconfig:
-        load_daconfig()
-
     jobs = dict(daconfig).get('scheduler', {})
-    if jobs.get('log level', False):
-        logger_object = get_logger()
+    using_sql_jobstore = False
+    if 'use docassemble database' in jobs:
+        using_sql_jobstore = bool(jobs.pop('use docassemble database'))
+    loglevel = 'INFO'
+    if 'log level' in jobs:
         loglevel = str(jobs.pop('log level')).upper()
-        if loglevel in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
-            loglevelName = logging.getLevelName(loglevel)
-            logger_object.setLevel(loglevelName)
-        else:
-            log("Invalid log level, defaulting to INFO")
-
+    
     if len(jobs) > 0:
+        if loglevel:
+            logger_object = get_logger()
+            if loglevel in ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'):
+                loglevelName = logging.getLevelName(loglevel)
+                logger_object.setLevel(loglevelName)
+            else:
+                docassemble_log("Invalid log level, defaulting to INFO")
+                log("Invalid log level, defaulting to INFO")
+                loglevelName = logging.getLevelName('INFO')
+                logger_object.setLevel(loglevelName)
         docassemble_log("Scheduler is starting...")
         log("Scheduler is starting...", 'debug')
-        log(f"Scheduler config:{jobs}", 'debug')
+        jobstore = None
+        if using_sql_jobstore:
+            log("Setting up Scheduler with SQLAlchemyJobStore", 'debug')
+            sqlurl = alchemy_connection_string()
+            jobstore = SQLAlchemyJobStore(sqlurl)
+            jobstores = {'default': jobstore}
+            bg_scheduler = BackgroundScheduler(jobstores=jobstores)
+        else:
+            log("Setting up Scheduler with default JobStore", 'debug')
+            bg_scheduler = BackgroundScheduler()
+        bg_scheduler.add_listener(my_listener, EVENT_JOB_ERROR)
+        bg_scheduler.add_listener(job_missed_listener, EVENT_JOB_MISSED)
+        if not daconfig:
+            load_daconfig()
 
-        bg_scheduler.remove_all_jobs()
+        if not using_sql_jobstore:
+            bg_scheduler.remove_all_jobs()
+
+        existing_jobs_dict = dict()
+        if jobstore is not None:
+            existing_jobs = jobstore.get_all_jobs()
+            for job in existing_jobs:
+                existing_jobs_dict[job.id] = job
+        added_job_names = set()
+        
         for job_name in jobs:
             if '.' not in job_name:
                 log(f"'{job_name}' must be in the format '[FILE_NAME].[FUNCTION_NAME]', skipping...")
@@ -110,7 +127,8 @@ def do_scheduler_setup():
                     func_kwargs = {}
             if 'contextmanager' in job_data:
                 func_kwargs['contextmanager'] = job_data.pop('contextmanager')
-
+            
+            log(f"Adding job '{job_name}'", 'debug')
             job = bg_scheduler.add_job(
                 scheduler_tasks.call_func_with_context,
                 id=job_name,
@@ -120,8 +138,28 @@ def do_scheduler_setup():
                 replace_existing=True,
                 **job_data
             )
-            # if need_trigger_now:
-            #    job.modify(next_run_time=datetime.datetime.now(existing_tz))
+            added_job_names.add(job_name)
+            
+            if job_name in existing_jobs_dict.keys():
+                # Determine if job was missed, if so reschedule next run
+                existing_job = existing_jobs_dict[job_name]
+                
+                # If job data is the same
+                # trigger is an object either CrontTigger of IntervalTrigger
+                if str(job.trigger) == str(existing_job.trigger) and job.args == existing_job.args and job.kwargs == existing_job.kwargs:
+                    existing_tz = existing_job.next_run_time.tzinfo
+                    if existing_job.next_run_time < datetime.datetime.now(existing_tz):
+                        log(f"Existing job missed its runtime, '{job_name}' was scheduled for {existing_job.next_run_time.strftime('%m/%d/%y %I:%M %p')} rescheduling for right now", 'debug')
+                        # offset run time because if runtime is in the past when .start() is called it will jump to the next runtime
+                        nowish = datetime.datetime.now(existing_tz).replace(microsecond=0) + datetime.timedelta(seconds=5)
+                        job.modify(next_run_time=nowish)
+
+
+        for existing_job_name in existing_jobs_dict.keys():
+            if existing_job_name not in added_job_names and jobstore is not None:
+                log(f"Deleting job from jobstore '{existing_job_name}'", 'debug')
+                jobstore.remove_job(existing_job_name)
+            
         bg_scheduler.start()
         log(f"Started scheduler with '{len(jobs)}' jobs", 'debug')
         for idx, job in enumerate(bg_scheduler.get_jobs()):
@@ -129,7 +167,6 @@ def do_scheduler_setup():
 
     else:
         docassemble_log(f"Background scheduler no jobs started")
-
 
 if 'playground' not in __file__ and __name__ != '__main__':
     set_schedule_logger()
@@ -144,12 +181,23 @@ if 'playground' not in __file__ and __name__ != '__main__':
                                trace=traceback.format_exc())
 
 elif __name__ == '__main__':
-    print(__name__)
-    print(__file__)
+    from docassemble.base.util import zoneinfo
+    import sys
+    import time
+    # the below adds zoneinfo for pickle loading
+    # Using the SQLAlchemyJobStore it pickles and unpickles the job
+    # If a job was pickled in docassemble and needs to be unpickled here in main it needs zoneinfo
+    if 'zoneinfo' not in sys.modules:
+        sys.modules['zoneinfo'] = zoneinfo
     log("Main code...")
     with app.app_context():
         do_scheduler_setup()
     log("HERE")
+    while True:
+        time.sleep(5)
+        for idx, job in enumerate(bg_scheduler.get_jobs()):
+            print(f"Job '{idx+1}' '{job.id}' next_run_time={job.next_run_time.strftime('%m/%d/%y %I:%M %p')}")
+            print('---')
     exit()
 
     from docassemble.webapp.server import db, app, set_request_active, login_user, UserModel, create_new_interview, random_string
