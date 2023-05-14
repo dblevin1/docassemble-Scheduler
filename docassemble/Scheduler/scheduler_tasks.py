@@ -88,9 +88,9 @@ def call_func_with_context(job_name, *pargs, **kwargs):
             ctx_cls = _get_custom_context_cls(contextmanager)
             with ctx_cls():
                 log(f"Successfully started context:'{contextmanager}'", 'debug')
-                _call_func(job_name)
+                _call_func(job_name, *pargs, **kwargs)
         else:
-            _call_func(job_name)
+            _call_func(job_name, *pargs, **kwargs)
 
 
 if 'playground' not in __file__ and __name__ != '__main__':
