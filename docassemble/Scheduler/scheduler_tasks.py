@@ -93,18 +93,3 @@ def call_func_with_context(job_name, *pargs, **kwargs):
             _call_func(job_name, *pargs, **kwargs)
 
 
-if 'playground' not in __file__ and __name__ != '__main__':
-    set_schedule_logger()
-    # import_tasks()
-elif __name__ == '__main__':
-    from docassemble.base.logger import default_logmessage, set_logmessage
-    log("Main code...")
-    worker_controller.initialize()
-    set_logmessage(default_logmessage)
-    # import_tasks()
-    # call_func_with_context('test.heartbeat')
-    # call_func_with_context('med_test.get_meds')
-    print()
-    call_func_with_context('docassemble.HappyAcres.tasks.scheduler_tasks.check_db',
-                           contextmanager='docassemble.HappyAcres.tasks.utils.SchedulerDatabaseContext')
-    print()
