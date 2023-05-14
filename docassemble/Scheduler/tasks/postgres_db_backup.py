@@ -25,7 +25,7 @@ def run(db_keys_to_backup, backup_location):
             db_name = backup_status[0] 
             temp_dir = backup_status[1]
             tar_file(db_name, temp_dir.name, backup_location, now)
-            temp_dir.close()
+            temp_dir.cleanup()
         if not backup_status:
             log(f"Failed to backup database '{database_to_backup}', skipping", 'error')
     log("Finshed custom database backup")
