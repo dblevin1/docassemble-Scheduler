@@ -1,6 +1,22 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.6](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.6) - 2023-05-14
+
+<small>[Compare with V0.1.5](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.5...V0.1.6)</small>
+
+### Added
+
+- added jobstore with configuration value and event missed listener logger ([8ad5cd1](https://github.com/dblevin1/docassemble-Scheduler/commit/8ad5cd1add8c3bcb59800371768b758aa76a1aed) by Daniel Blevins).
+
+### Changed
+
+- changed apscheduler required version to 3.10.1 ([64a6a38](https://github.com/dblevin1/docassemble-Scheduler/commit/64a6a3893c3c42874d58622e62887c872b166919) by Daniel Blevins).
+
+### Removed
+
+- remove unused code that was setting up the logger erroneously ([9f5f9c0](https://github.com/dblevin1/docassemble-Scheduler/commit/9f5f9c05c39c916f0373cf79a7240fca70119bc6) by Daniel Blevins).
+
 ## [V0.1.5](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.5) - 2023-05-14
 
 <small>[Compare with V0.1.4](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.4...V0.1.5)</small>
@@ -53,4 +69,3 @@
 
 - remove ubused imports ([67d60a8](https://github.com/dblevin1/docassemble-Scheduler/commit/67d60a8bf8dff7da18e20678b9407c44b3876c75) by Daniel Blevins).
 - remove comments ([031078d](https://github.com/dblevin1/docassemble-Scheduler/commit/031078d0201bad9677a1161dec6d36bc9dab3b10) by Daniel Blevins).
-
