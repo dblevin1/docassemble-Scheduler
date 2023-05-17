@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.7](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.7) - 2023-05-17
+
+<small>[Compare with V0.1.6](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.6...V0.1.7)</small>
+
+### Changed
+
+- change postgre_db_backup tar function to not use gzip ([7952185](https://github.com/dblevin1/docassemble-Scheduler/commit/7952185b339bb02ea41cc17d499896445b120ce7) by Daniel Blevins).
+
 ## [V0.1.6](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.6) - 2023-05-14
 
 <small>[Compare with V0.1.5](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.5...V0.1.6)</small>
