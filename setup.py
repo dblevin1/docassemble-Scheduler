@@ -44,12 +44,8 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
                 out.setdefault(package, []).append(prefix+name)
     return out
 
-
-with open("VERSION") as file:
-    current_version = file.readlines()[0]
-
 setup(name='docassemble.Scheduler',
-      version=str(current_version).strip(),
+      version='0.1.7',
       description=('A docassemble extension.'),
       long_description='# docassemble.Scheduler\n\nA docassemble extension.\n\n## Author\n\nSystem Administrator, admin@admin.com\n\n',
       long_description_content_type='text/markdown',
