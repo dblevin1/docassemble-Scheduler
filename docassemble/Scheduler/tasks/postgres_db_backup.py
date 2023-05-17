@@ -20,6 +20,7 @@ def run(db_keys_to_backup, backup_location):
         database_config = daconfig.get(database_to_backup)
         if not database_config:
             log(f"Database '{database_to_backup}' not found in the configuration", 'error')
+        log(f"Backing up database '{database_to_backup}'")
         backup_status = do_data_db_backup(database_config)
         if backup_status:
             db_name = backup_status[0] 
@@ -51,6 +52,7 @@ def do_data_db_backup(database_config: dict):
         log("Running pg_dump command...")
         pg_process = subprocess.run(f'pg_dump -F c --username="{db_user}" -h {db_host} "{db_name}" -f "{ sql_file }"', shell=True,
                                     stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE, env=custom_env)
+        log(f"pg_dump output: stdout={pg_process.stdout}, stderr={pg_process.stderr}")
     except:
         log("Caught Exception, Check logs", 'error')
         raise
@@ -64,14 +66,15 @@ def do_data_db_backup(database_config: dict):
 def tar_file(db_name, temp_dir_name, backup_location, now=None):
     if not now:
         now = datetime.now()
-    tar_file_name = str(db_name) + '.tar.gz'
+    tar_file_name = str(db_name) + '.tar'
     try:
         log("Tar sql file...")
-        args = f'tar -czf "{tar_file_name}" "{db_name}"'
+        args = f'tar -cf "{tar_file_name}" "{db_name}"'
         log(f"Running tar with args: {args}")
         tar_process = subprocess.run(args, shell=True,
                                         stdout=subprocess.PIPE, universal_newlines=True, stderr=subprocess.PIPE,
                                         cwd=temp_dir_name)
+        log(f"tar output: stdout={tar_process.stdout}, stderr={tar_process.stderr}")
     except:
         log("Caught Exception, Check logs", 'error')
         raise
@@ -80,7 +83,7 @@ def tar_file(db_name, temp_dir_name, backup_location, now=None):
         log(f"Tar error:{tar_process.stdout}{tar_process.stderr}", 'error')
         return False
     log("Moving tar file")
-    to_path = os.path.join(backup_location, now.strftime(f"%Y/%m/%d_%H.%M.%S_{db_name}.tar.gz"))
+    to_path = os.path.join(backup_location, now.strftime(f"%Y/%m/%d_%H.%M.%S_{db_name}.tar"))
     os.makedirs(os.path.dirname(to_path), exist_ok=True)
     shutil.move(os.path.join(temp_dir_name, tar_file_name), to_path)
     return True
