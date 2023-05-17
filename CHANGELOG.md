@@ -1,6 +1,10 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.8](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.8) - 2023-05-17
+
+<small>[Compare with V0.1.7](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.7...V0.1.8)</small>
+
 ## [V0.1.7](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.7) - 2023-05-17
 
 <small>[Compare with V0.1.6](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.6...V0.1.7)</small>
