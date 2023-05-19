@@ -28,6 +28,7 @@ from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MI
 from docassemble.base.config import daconfig
 from docassemble.base.config import load as load_daconfig
 from .scheduler_logger import log, docassemble_log, get_logger, set_schedule_logger, error_notification, USING_SCHEDULE_LOGGER
+from sqlalchemy.exc import ProgrammingError
 
 # Do not import this file anywhere
 
@@ -97,7 +98,14 @@ def do_scheduler_setup():
 
         existing_jobs_dict = dict()
         if jobstore is not None:
-            existing_jobs = jobstore.get_all_jobs()
+            try:
+                existing_jobs = jobstore.get_all_jobs()
+            except ProgrammingError as my_ex:
+                if 'UndefinedTable' in str(my_ex):
+                    # Table doesn't exist yet, means this is the first run using the database, so no existing jobs to check
+                    existing_jobs = []
+                else:
+                    raise
             for job in existing_jobs:
                 existing_jobs_dict[job.id] = job
         added_job_names = set()
