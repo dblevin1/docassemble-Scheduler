@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.9](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.9) - 2023-05-19
+
+<small>[Compare with V0.1.8](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.8...V0.1.9)</small>
+
+### Fixed
+
+- fix undefined table error on first run using the sql jobstore ([f78f426](https://github.com/dblevin1/docassemble-Scheduler/commit/f78f426c65caaa55836aabe41de7782fa7500bdf) by Daniel Blevins).
+
 ## [V0.1.8](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.8) - 2023-05-17
 
 <small>[Compare with V0.1.7](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.7...V0.1.8)</small>
