@@ -29,6 +29,7 @@ from docassemble.base.config import daconfig
 from docassemble.base.config import load as load_daconfig
 from .scheduler_logger import log, docassemble_log, get_logger, set_schedule_logger, error_notification, USING_SCHEDULE_LOGGER
 from sqlalchemy.exc import ProgrammingError
+from docassemble.base.config import in_celery, in_cron
 
 # Do not import this file anywhere
 
@@ -176,7 +177,10 @@ def do_scheduler_setup():
     else:
         docassemble_log(f"Background scheduler no jobs started")
 
-if 'playground' not in __file__ and __name__ != '__main__':
+
+if in_celery or in_cron:
+    log(f"{in_celery=} {in_cron=}, Not setting up Scheduler...")
+elif 'playground' not in __file__ and __name__ != '__main__':
     set_schedule_logger()
     with app.app_context():
         try:
