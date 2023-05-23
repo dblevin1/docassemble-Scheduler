@@ -1,6 +1,18 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.10](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.10) - 2023-05-23
+
+<small>[Compare with V0.1.9](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.9...V0.1.10)</small>
+
+### Added
+
+- add do not preload to the test SchedulerContext class ([cb706b6](https://github.com/dblevin1/docassemble-Scheduler/commit/cb706b62a1a64eb229dbd093685c51f77afdf975) by Daniel Blevins).
+
+### Fixed
+
+- fixed scheduler being started in cron and celery ([8f8941c](https://github.com/dblevin1/docassemble-Scheduler/commit/8f8941c553eb62a631ecb32100a83315f222f24d) by Daniel Blevins).
+
 ## [V0.1.9](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.9) - 2023-05-19
 
 <small>[Compare with V0.1.8](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.8...V0.1.9)</small>
