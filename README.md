@@ -3,13 +3,14 @@
 This is a docassemble extension that uses [APScheduler](https://apscheduler.readthedocs.io/) to setup a scheduler that is interview independent.
 The scheduling system built into docassemble needs a existing interview session with allow_cron=True to work and only has hourly granularity. This package allows you to setup a scheduler with fine grain control of the execution params.
 
-## Usage
+# Usage
 
 Docassemble configuration example:
 
 ```yml
 scheduler:
     log level: debug
+    # Example modules in the current package
     test.heartbeat:
         type: interval
         minutes: 1
@@ -26,44 +27,55 @@ scheduler:
             - positional_value_2
         kwargs:
             optional_param: optional_value
+    # Using the default admin playground
+    docassemble.playground1.test_py_file.function_name:
+        type: cron
+        minute: "*/5"
 ```
 
-You may either install this package directly on docassemble using the package page and refering to this repos url. Then create your own python files in a different package (or playground) and add them to the configuration by refering to the package name, file name, and function name.
+### Install
 
-Or you can fork this repo and write your own functions by creating a python file in the [tasks](https://github.com/dblevin1/docassemble-Scheduler/tree/master/docassemble/Scheduler/tasks) folder. Then uploading your fork to docassemble.
+ * In docassemble enter [https://github.com/dblevin1/docassemble-Scheduler](https://github.com/dblevin1/docassemble-Scheduler) for the GitHub URL on the Package Management page and click update.
+ * Create your own python files with functions in a different package (or playground).
+ * Add it to the docassemble configuration by referring to the package name, file name, and function name seperated by dots.
 
-## Scheduler Logger
 
-The Scheduler Logger creates a new log file called `scheduler.log` which can be viewed from the web interface.
-When writing your functions you may use the scheduler logger by using the below code. 
-```python
-# import the scheduler logger
-from docassemble.Scheduler.scheduler_logger import log
-# log usage: log(message, message_level='info')
-# log a message, not specifing log_level deafults to 'info'
-log("Hello World")
-log("Hello World", 'debug')
-log("Hello World", 'info')
-log("Hello World", 'warning')
-log("Hello World", 'error')
-# logging a critical message automatically sends an email to the 'error notification email' docassemble configuration value
-log("Hello World", 'critical')
-```
+You may also fork this repo and write your own functions by creating a python file in the [tasks](https://github.com/dblevin1/docassemble-Scheduler/tree/master/docassemble/Scheduler/tasks) folder. Then uploading your fork to docassemble.
+
 
 # Configuration
+### This Package
 
-In the above example `test.heartbeat` refers to the function `heartbeat` in the file [test.py](https://github.com/dblevin1/docassemble-Scheduler/blob/eba18a912d2de72f2e748d82122b3504e661a2da/docassemble/Scheduler/tasks/test.py).
-Note that any job files should be placed in the [tasks](https://github.com/dblevin1/docassemble-Scheduler/tree/master/docassemble/Scheduler/tasks) folder or should be configured to using the package and function name.
+In the above example `test.heartbeat` refers to the function `heartbeat` in the file [test.py](https://github.com/dblevin1/docassemble-Scheduler/blob/eba18a912d2de72f2e748d82122b3504e661a2da/docassemble/Scheduler/tasks/test.py). You can refer to jobs in this package by just using the filename and function name.
 
-You can refer to functions using a package name and function name. For example if you have the demo package installed the configuration below will execute [get_time](https://github.com/jhpyle/docassemble/blob/master/docassemble_demo/docassemble/demo/gettime.py) every minute:
+### Playground
+
+You can setup a job to execute a playground module by using the following, replacing the items in brackets with your own values:
+
+`docassemble.playground[USER_ID][PLAYGROUND_NAME].[FILE_NAME].[FUNCTION_NAME]`
+
+* USER_ID = The id of the user who owns the playground
+* PLAYGROUND_NAME = If using the base playgound leave blank
+* FILE_NAME = The python file that exists in the 'Modules' section of the playground
+* FUNCTION_NAME = Should be a function in the python file
+
+### Custom Package
+
+You can refer to a job using a package name, file name, and function name.
+
+`[PACKAGE_NAME].[FILE_NAME].[FUNCTION_NAME]`
+
+* PACKAGE_NAME = The full name of the package
+* FILE_NAME = The python file that exists in the 'Modules' section of the playground
+* FUNCTION_NAME = Should be a function in the python file
+
+For example if you have the demo package installed the configuration below will execute [get_time](https://github.com/jhpyle/docassemble/blob/master/docassemble_demo/docassemble/demo/gettime.py) every minute:
 ```yml
 scheduler:
     docassemble.demo.gettime.get_time:
         type: interval
         minutes: 1
 ```
-
-`log level` is optional and will default to INFO if not provided. The value is not case-sensitive. Available options are `debug`, `info`, `warning`, `error`, `critical`. 
 
 ## Types:
 
@@ -94,7 +106,28 @@ See [APScheduler Triggers Interval](https://apscheduler.readthedocs.io/en/3.x/mo
 
 See [APScheduler Triggers Cron](https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html#module-apscheduler.triggers.cron) for more info
 
-## Passing Arguments
+ 
+# Using the Scheduler Logger
+
+The Scheduler Logger creates a new log file called `scheduler.log` which can be viewed from the web interface.
+When writing your functions you may use the scheduler logger by using the below code. 
+```python
+# import the scheduler logger
+from docassemble.Scheduler.scheduler_logger import log
+# log usage: log(message, message_level='info')
+# log a message, not specifing log_level deafults to 'info'
+log("Hello World")
+log("Hello World", 'debug')
+log("Hello World", 'info')
+log("Hello World", 'warning')
+log("Hello World", 'error')
+# logging a critical message automatically sends an email to the 'error notification email' docassemble configuration value
+log("Hello World", 'critical')
+```
+
+`log level` is optional and will default to INFO if not provided. The value is not case-sensitive. Available options are `debug`, `info`, `warning`, `error`, `critical`. 
+
+# Passing Arguments
 
 To pass any arguments to a function use the configuration `args` and `kwargs`
 ```yml
@@ -111,7 +144,7 @@ scheduler:
 The above configuration run `test_arbitrary_params` which will log any parameters passed to it. The above configuration will log: 
 `pargs=('positional_value_1', 'positional_value_2') kwargs={'optional_param': 'optional_value'}`
 
-## Persistent job store
+# Persistent job store
 
 Using a persistent job store will allow the scheduler to track job execution time and determine if a job was missed across restarts. On the scheduler startup (which happens everytime docassemble restarts) if a job execution time was missed it will be rescheduled to run immediately. To use docassembles database as a persistent job store include `use docassemble database: True` like the below snippet.
 
