@@ -1,6 +1,15 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.11](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.11) - 2023-11-30
+
+<small>[Compare with V0.1.10](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.10...V0.1.11)</small>
+
+### Added
+
+- add better detection if started by a docassemble server ([b2d4eab](https://github.com/dblevin1/docassemble-Scheduler/commit/b2d4eab12a80545a08c81e7cb6176c604910db85) by Daniel Blevins).
+- add better install and configuration instructions ([309c8b4](https://github.com/dblevin1/docassemble-Scheduler/commit/309c8b4067adda133d863a20378c35877b956aeb) by Daniel Blevins).
+
 ## [V0.1.10](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.10) - 2023-05-23
 
 <small>[Compare with V0.1.9](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.9...V0.1.10)</small>
