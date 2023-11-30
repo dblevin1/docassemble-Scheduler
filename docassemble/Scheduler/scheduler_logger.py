@@ -52,8 +52,16 @@ def log(msg, lvl='info'):
     if not USING_SCHEDULE_LOGGER:
         if worker_controller.loaded:
             worker_controller.set_request_active(False)
+        else:
+            try:
+                from docassemble.webapp.server import set_request_active
+                set_request_active(False)
+            except Exception as my_ex:
+                print(f"{my_ex.__class__.__name__}:{my_ex}")
+                pass
         lvl = str(lvl).upper()
         docassemble_log(f"Scheduler [{ lvl }]: { msg }")
+        print(f"Scheduler [{ lvl }]: { msg }")
     else:
         lvl = str(lvl).lower()
         if lvl in ('debug', 'info', 'warning', 'error', 'critical'):

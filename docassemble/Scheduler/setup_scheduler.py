@@ -177,8 +177,19 @@ def do_scheduler_setup():
     else:
         docassemble_log(f"Background scheduler no jobs started")
 
+def file_imported_by_docassemble_server():
+    fullname_files_in_stack = [f.filename for f in traceback.extract_stack() if '.py' in f.filename]
+    package_files_in_stack = [os.path.sep.join(f.split(os.path.sep)[-3:]) for f in fullname_files_in_stack if f"{os.path.sep}docassemble{os.path.sep}" in f]
+    if len(package_files_in_stack) >= 2:
+        if package_files_in_stack[0] == 'docassemble/webapp/run.py' and package_files_in_stack[1] == 'docassemble/webapp/server.py':
+            return True
+    log(f"File Stack:{package_files_in_stack}", 'debug')
+    return False
 
-if in_celery or in_cron:
+
+if not file_imported_by_docassemble_server():
+    log(f"setup_scheduler must be imported by a docassemble server to work properly! Not setting up scheduler...")
+elif in_celery or in_cron:
     log(f"{in_celery=} {in_cron=}, Not setting up Scheduler...")
 elif 'playground' not in __file__ and __name__ != '__main__':
     set_schedule_logger()
