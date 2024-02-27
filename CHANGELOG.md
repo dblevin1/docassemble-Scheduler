@@ -1,6 +1,18 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.12](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.12) - 2024-02-27
+
+<small>[Compare with V0.1.11](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.11...V0.1.12)</small>
+
+### Fixed
+
+- fix logger not using level before being setup ([eb7b65a](https://github.com/dblevin1/docassemble-Scheduler/commit/eb7b65ae32b7e21ca3e75de83075635ce71de244) by Daniel Blevins).
+
+### Changed
+
+- change setup checks to prioritize in_cron and in_celery ([d8dcce1](https://github.com/dblevin1/docassemble-Scheduler/commit/d8dcce102a6dfc5481e61ee286a65d4f04d026db) by Daniel Blevins).
+
 ## [V0.1.11](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.11) - 2023-11-30
 
 <small>[Compare with V0.1.10](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.10...V0.1.11)</small>
