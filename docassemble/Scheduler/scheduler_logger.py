@@ -1,6 +1,7 @@
 # do not pre-load
 import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import datetime
 import tempfile
 import json
@@ -31,7 +32,7 @@ def get_logger():
         log_formatter = logging.Formatter(
             'scheduler: %(asctime)s %(levelname)s %(filename)s->%(funcName)s(%(lineno)d) %(message)s')
         # rotating_file_handler = logging.handlers.RotatingFileHandler(
-        rotating_file_handler = logging.handlers.TimedRotatingFileHandler(
+        rotating_file_handler = TimedRotatingFileHandler(
             filename=log_file,
             when='midnight',
             backupCount=7,
@@ -59,9 +60,15 @@ def log(msg, lvl='info'):
             except Exception as my_ex:
                 print(f"{my_ex.__class__.__name__}:{my_ex}")
                 pass
-        lvl = str(lvl).upper()
-        docassemble_log(f"Scheduler [{ lvl }]: { msg }")
-        print(f"Scheduler [{ lvl }]: { msg }")
+        config_log_lvl = dict(daconfig).get('scheduler', {}).get('log level')
+        if not config_log_lvl:
+            config_log_lvl = 'info'
+        config_log_lvl = str(config_log_lvl).upper()
+        if not hasattr(logging, config_log_lvl):
+            config_log_lvl = 'DEBUG'
+        if getattr(logging, config_log_lvl) < getattr(logging, str(lvl).upper()):
+            return
+        docassemble_log(f"Scheduler [{ str(lvl).upper() }]: { msg }")
     else:
         lvl = str(lvl).lower()
         if lvl in ('debug', 'info', 'warning', 'error', 'critical'):
