@@ -1,22 +1,10 @@
 # pre-load
 import datetime
 import traceback
-import subprocess
 import sys
 import copy
 import os
 import logging
-import requests
-import json
-import tempfile
-import re
-from bs4 import BeautifulSoup
-# if __name__ == "__main__":
-#    import docassemble.base.config
-#    #docassemble.base.config.load(arguments=remaining_arguments, in_cron=True)
-#    docassemble.base.config.load()
-#from docassemble.webapp.server import error_notification as da_error_notification
-#from docassemble.webapp.server import app
 from docassemble.webapp.app_object import app
 from docassemble.webapp.user_database import alchemy_url as custom_alchemy_url
 from docassemble.webapp.database import alchemy_connection_string
@@ -187,10 +175,10 @@ def file_imported_by_docassemble_server():
     return False
 
 
-if not file_imported_by_docassemble_server():
-    log(f"setup_scheduler must be imported by a docassemble server to work properly! Not setting up scheduler...")
-elif in_celery or in_cron:
-    log(f"{in_celery=} {in_cron=}, Not setting up Scheduler...")
+if in_celery or in_cron:
+    log(f"{in_celery=} {in_cron=}, Not setting up Scheduler...", 'debug')
+elif not file_imported_by_docassemble_server():
+    log(f"setup_scheduler must be imported by a docassemble server to work properly! Not setting up scheduler...", 'debug')
 elif 'playground' not in __file__ and __name__ != '__main__':
     set_schedule_logger()
     with app.app_context():
@@ -198,8 +186,8 @@ elif 'playground' not in __file__ and __name__ != '__main__':
             do_scheduler_setup()
         except Exception as my_ex:
             clean_trace = str(traceback.format_exc()).replace('\n', '')
-            log('scheduler: Setting up the scheduler Failed:' + f"{type(my_ex)}:{my_ex} { clean_trace}")
-            docassemble_log('scheduler: Setting up the scheduler Failed:' + f"{type(my_ex)}:{my_ex} { clean_trace}")
+            log('scheduler: Setting up the scheduler Failed:' + f"{type(my_ex)}:{my_ex} { clean_trace}", 'error')
+            docassemble_log('scheduler: Setting up the scheduler Failed:' + f"{type(my_ex)}:{my_ex} { clean_trace}", 'error')
             error_notification(my_ex, "Setting up the scheduler Failed:" + str(my_ex),
                                trace=traceback.format_exc())
 
