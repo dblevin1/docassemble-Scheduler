@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.13) - 2024-04-01
+
+<small>[Compare with V0.1.12](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.12...V0.1.13)</small>
+
+### Fixed
+
+- fix incorrect logging lvl check ([867cd36](https://github.com/dblevin1/docassemble-Scheduler/commit/867cd36d05fac5d4028f895e0eabd49dfcca6d97) by Daniel Blevins).
+
 ## [V0.1.12](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.12) - 2024-02-27
 
 <small>[Compare with V0.1.11](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.11...V0.1.12)</small>
