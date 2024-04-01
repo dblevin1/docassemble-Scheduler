@@ -240,12 +240,11 @@ elif "playground" not in __file__ and __name__ != "__main__":
             log(
                 "scheduler: Setting up the scheduler Failed:"
                 + f"{type(my_ex)}:{my_ex} { clean_trace}",
-                "error",
+                "crtitical",
             )
             docassemble_log(
                 "scheduler: Setting up the scheduler Failed:"
-                + f"{type(my_ex)}:{my_ex} { clean_trace}",
-                "error",
+                + f"{type(my_ex)}:{my_ex} { clean_trace}"
             )
             error_notification(
                 my_ex,
