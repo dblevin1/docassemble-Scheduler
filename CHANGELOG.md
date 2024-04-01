@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [V0.1.14](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.14) - 2024-04-01
+
+<small>[Compare with V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.13...V0.1.14)</small>
+
+### Fixed
+
+- fix error log message on setup ([80936ef](https://github.com/dblevin1/docassemble-Scheduler/commit/80936ef3b85e504714070d27a8943f91c1b214c4) by Daniel Blevins).
+
 ## [V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.13) - 2024-04-01
 
 <small>[Compare with V0.1.12](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.12...V0.1.13)</small>
