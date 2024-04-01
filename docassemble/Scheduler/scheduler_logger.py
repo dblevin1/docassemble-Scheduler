@@ -55,21 +55,21 @@ def log(msg, lvl="info"):
     if not USING_SCHEDULE_LOGGER:
         if worker_controller.loaded:
             worker_controller.set_request_active(False)
-        else:
+        """else:
             try:
                 from docassemble.webapp.server import set_request_active
 
                 set_request_active(False)
             except Exception as my_ex:
                 print(f"{my_ex.__class__.__name__}:{my_ex}")
-                pass
+                pass"""
         config_log_lvl = dict(daconfig).get("scheduler", {}).get("log level")
         if not config_log_lvl:
             config_log_lvl = "info"
         config_log_lvl = str(config_log_lvl).upper()
         if not hasattr(logging, config_log_lvl):
             config_log_lvl = "DEBUG"
-        if getattr(logging, config_log_lvl) < getattr(logging, str(lvl).upper()):
+        if getattr(logging, config_log_lvl) > getattr(logging, str(lvl).upper()):
             return
         docassemble_log(f"Scheduler [{ str(lvl).upper() }]: { msg }")
     else:
