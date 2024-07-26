@@ -89,9 +89,7 @@ def log(msg, lvl="info"):
                 trace += traceback.format_exc() + "\n"
             trace += "Current Stack:\n" + "".join(traceback.format_stack())
             if value is not None:
-                error_notification(
-                    value, message=f"{value}\nMessage: {msg}\n", trace=trace
-                )
+                error_notification(value, message=f"{value}\nMessage: {msg}\n", trace=trace)
             else:
                 error_notification(Exception(msg), trace=trace)
         except Exception as my_ex:
@@ -112,16 +110,12 @@ def set_schedule_logger():
     USING_SCHEDULE_LOGGER = True
 
 
-def error_notification(
-    err, message=None, history=None, trace=None, referer=None, the_vars=None
-):
+def error_notification(err, message=None, history=None, trace=None, referer=None, the_vars=None):
     with app.app_context():
         my_error_notification(err, message, history, trace, referer, the_vars)
 
 
-def my_error_notification(
-    err, message=None, history=None, trace=None, referer=None, the_vars=None
-):
+def my_error_notification(err, message=None, history=None, trace=None, referer=None, the_vars=None):
     recipient_email = daconfig.get("error notification email", None)
     if not recipient_email:
         return False
@@ -133,13 +127,7 @@ def my_error_notification(
     if message is None:
         errmess = str(err)
     else:
-        errmess = (
-            str(message)
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("&", "&amp;")
-            .replace('"', "&quot;")
-        )
+        errmess = str(message).replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;").replace('"', "&quot;")
     try:
         if not worker_controller.loaded:
             worker_controller.initialize()
@@ -196,18 +184,9 @@ def my_error_notification(
             if trace is not None:
                 body += "\n\n" + str(trace)
                 html += "<pre>" + str(trace) + "</pre>"
-            if (
-                "external hostname" in daconfig
-                and daconfig["external hostname"] is not None
-            ):
-                body += "\n\nThe external hostname was " + str(
-                    daconfig["external hostname"]
-                )
-                html += (
-                    "<p>The external hostname was "
-                    + str(daconfig["external hostname"])
-                    + "</p>"
-                )
+            if "external hostname" in daconfig and daconfig["external hostname"] is not None:
+                body += "\n\nThe external hostname was " + str(daconfig["external hostname"])
+                html += "<p>The external hostname was " + str(daconfig["external hostname"]) + "</p>"
             html += "\n  </body>\n</html>"
             msg = Message(
                 app.config["APP_NAME"] + " Scheduler error: " + err.__class__.__name__,
@@ -221,9 +200,7 @@ def my_error_notification(
             return my_send_email(msg)
         except Exception as zerr:
             log(str(zerr))
-            body = (
-                "There was an error in the " + app.config["APP_NAME"] + " application."
-            )
+            body = "There was an error in the " + app.config["APP_NAME"] + " application."
             html = (
                 "<html>\n  <body>\n    <p>There was an error in the "
                 + app.config["APP_NAME"]
