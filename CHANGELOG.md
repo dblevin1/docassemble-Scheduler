@@ -1,9 +1,9 @@
 # Changelog
 
 <!-- insertion marker -->
-## [V0.1.14](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/V0.1.14) - 2024-04-01
+## [0.1.14](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.1.14) - 2024-04-01
 
-<small>[Compare with V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.13...V0.1.14)</small>
+<small>[Compare with V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.13...0.1.14)</small>
 
 ### Fixed
 
