@@ -38,8 +38,7 @@ def do_data_db_backup(database_config: dict):
     db_user = database_config.get('user')
     db_pass = database_config.get('password')
     db_name = database_config.get('name')
-    # hardcode localhost because we don't want to backup an offsite database
-    db_host = 'localhost'
+    db_host = database_config.get("host")
     if not db_user or not db_name or not db_pass:
         log("Error user, name, pass from config", 'error')
         return False
