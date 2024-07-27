@@ -88,7 +88,10 @@ def _call_func(job_name, *pargs, **kwargs):
 
 
 def call_func_with_context(job_name, *pargs, **kwargs):
+    from .task_data import current_task_data
+
     job_name = str(job_name)
+    current_task_data.job_name = job_name
     with bg_context():
         log(f"Calling task '{job_name}'")
         if "contextmanager" in kwargs:

@@ -24,6 +24,14 @@ SCHEDULE_LOGGER = None
 USING_SCHEDULE_LOGGER = False
 
 
+class ContextFilter(logging.Filter):
+    def filter(self, record):
+        from .task_data import current_task_data
+
+        record.job_name = str(current_task_data.job_name).split(".")[-1]
+        return True
+
+
 def get_logger():
     global SCHEDULE_LOGGER
     if SCHEDULE_LOGGER is None:
@@ -31,7 +39,7 @@ def get_logger():
         # if not scheduler_logger.hasHandlers():
         log_file = os.path.join("/usr/share/docassemble/log/", "scheduler.log")
         log_formatter = logging.Formatter(
-            "scheduler: %(asctime)s %(levelname)s %(filename)s->%(funcName)s(%(lineno)d) %(message)s"
+            "scheduler: %(asctime)s %(levelname)s %(job_name)s %(filename)s->%(funcName)s(%(lineno)d) %(message)s"
         )
         # rotating_file_handler = logging.handlers.RotatingFileHandler(
         rotating_file_handler = TimedRotatingFileHandler(
@@ -45,6 +53,7 @@ def get_logger():
 
         SCHEDULE_LOGGER.setLevel(logging.INFO)
         SCHEDULE_LOGGER.addHandler(rotating_file_handler)
+        SCHEDULE_LOGGER.addFilter(ContextFilter())
         # log = scheduler_logger.info
     return SCHEDULE_LOGGER
 
