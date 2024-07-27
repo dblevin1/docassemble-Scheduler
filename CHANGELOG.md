@@ -1,6 +1,18 @@
 # Changelog
 
 <!-- insertion marker -->
+## [0.1.15](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.1.15) - 2024-07-26
+
+<small>[Compare with 0.1.14](https://github.com/dblevin1/docassemble-Scheduler/compare/0.1.14...0.1.15)</small>
+
+### Added
+
+- add job name to logger ([dab6f74](https://github.com/dblevin1/docassemble-Scheduler/commit/dab6f7402188876267a1ce26f4cdd8513f082e6a) by Daniel Blevins).
+
+### Removed
+
+- remove hardcoded db_host ([9a6514c](https://github.com/dblevin1/docassemble-Scheduler/commit/9a6514c45f1de181be089632c7d7aabcfe2d02e6) by Daniel Blevins).
+
 ## [0.1.14](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.1.14) - 2024-04-01
 
 <small>[Compare with V0.1.13](https://github.com/dblevin1/docassemble-Scheduler/compare/V0.1.13...0.1.14)</small>
