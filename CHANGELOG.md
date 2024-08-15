@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [0.2.0](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.2.0) - 2024-08-15
+
+<small>[Compare with 0.1.15](https://github.com/dblevin1/docassemble-Scheduler/compare/0.1.15...0.2.0)</small>
+
+### Changed
+
+- change to uwsgi signal based system ([72573f7](https://github.com/dblevin1/docassemble-Scheduler/commit/72573f763f8a2bcddb9e75966a79b1d6fcf6c79f) by Daniel Blevins).
+
 ## [0.1.15](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.1.15) - 2024-07-26
 
 <small>[Compare with 0.1.14](https://github.com/dblevin1/docassemble-Scheduler/compare/0.1.14...0.1.15)</small>
