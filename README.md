@@ -1,7 +1,20 @@
 # docassemble.Scheduler
 
-This is a docassemble extension that uses [APScheduler](https://apscheduler.readthedocs.io/) to setup a scheduler that is interview independent.
-The scheduling system built into docassemble needs a existing interview session with allow_cron=True to work and only has hourly granularity. This package allows you to setup a scheduler with fine grain control of the execution params.
+This is a docassemble extension that uses [uWSGI cron system](https://uwsgi-docs.readthedocs.io/en/latest/Cron.html) to setup jobs that are interview independent.
+The scheduling system built into docassemble needs an existing interview session with allow_cron=True to work and only has hourly granularity.
+This package allows you to setup a scheduler with fine grain control of the execution params.
+Some usecases might be, send a scheduled email report, newsletters, refreshing cached data.
+
+Important notes about using this Scheduler:
+
+* this package assumes you haven't changed the [uWSGI configuration](https://github.com/jhpyle/docassemble/blob/master/Docker/config/docassemble.ini.dist) 
+* unchecked limit of **64 jobs**, this comes from [uWSGI Default Config](https://uwsgi-docs.readthedocs.io/en/latest/Cron.html#notes)
+* a job will not wait for a previous job to complete
+* a job will be run by the first available uWSGI **worker**, a [uWSGI mule](https://uwsgi-docs.readthedocs.io/en/latest/Mules.html) or [uWSGI spooler](https://uwsgi-docs.readthedocs.io/en/latest/Spooler.html) would be preferable but that would require editing the uWSGI config file and restarting uWSGI 
+* your function must be defined in the global scope (no defining a function inside a function)
+* the deault error handler will send an email to 'error notification email' with an attachment of all the variables in the current stack **(note depending on your use-case this may be a security/privacy issue)**
+
+**Upgrading:** Versions 0.1.x use [APScheduler](https://apscheduler.readthedocs.io/) which had issues when accessing the database. Because each job executed in a new thread which was messing with the database engine connection. Using uWSGI means jobs are executed the same way a web request is handled (ie a forked process) and can use the existing database engine and session in docassemble.
 
 # Usage
 
@@ -9,28 +22,28 @@ Docassemble configuration example:
 
 ```yml
 scheduler:
-    log level: debug
-    # Example modules in the current package
-    test.heartbeat:
-        type: interval
-        minutes: 1
-    test.heartbeat:
-        type: cron
-        day: 1
-        hour: 0
-        minute: 1
-    test.test_arbitrary_params:
-        type: interval
-        minutes: 1
-        args:
-            - positional_value_1
-            - positional_value_2
-        kwargs:
-            optional_param: optional_value
-    # Using the default admin playground
-    docassemble.playground1.test_py_file.function_name:
-        type: cron
-        minute: "*/5"
+  log level: debug
+  # Example modules in the current package
+  test.heartbeat:
+    type: interval
+    minutes: 1
+  test.heartbeat:
+    type: cron
+    day: 1
+    hour: 0
+    minute: 1
+  test.test_arbitrary_params:
+    type: interval
+    minutes: 1
+    args:
+        - positional_value_1
+        - positional_value_2
+    kwargs:
+        optional_param: optional_value
+  # Using the default admin playground
+  docassemble.playground1.test_py_file.function_name:
+    type: cron
+    minute: "*/5"
 ```
 
 ### Install
@@ -85,27 +98,26 @@ scheduler:
   
 ## `Interval` Parameters
 
-* `weeks` (int) - number of weeks to wait
 * `days` (int) – number of days to wait
 * `hours` (int) – number of hours to wait
 * `minutes` (int) – number of minutes to wait
 * `seconds` (int) – number of seconds to wait
-  
-See [APScheduler Triggers Interval](https://apscheduler.readthedocs.io/en/3.x/modules/triggers/interval.html#module-apscheduler.triggers.interval) for more info
+
+All values are converted to `seconds` and added together
 
 ## `Cron` Parameters
 
-* `year` (int|str) – 4-digit year
 * `month` (int|str) – month (1-12)
 * `day` (int|str) – day of month (1-31)
-* `week` (int|str) – ISO week (1-53)
-* `day_of_week` (int|str) – number or name of weekday (0-6 or mon,tue,wed,thu,fri,sat,sun)
+* `weekday` (int|str) – number of weekday (0-6)
 * `hour` (int|str) – hour (0-23)
 * `minute` (int|str) – minute (0-59)
-* `second` (int|str) – second (0-59)
 
-See [APScheduler Triggers Cron](https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html#module-apscheduler.triggers.cron) for more info
+Prefix any value with `*/` or `-` to run every *nth* value
+* Example: `minute: "*/5"` means run **every 5 minutes** which is equivalent to `minute: -5`
+* As opposed to `minute: 5` means **run when minute is 5**
 
+Any value not given will be given a default value of `*` which is equivalent to `-1`
  
 # Using the Scheduler Logger
 
@@ -132,30 +144,18 @@ log("Hello World", 'critical')
 To pass any arguments to a function use the configuration `args` and `kwargs`
 ```yml
 scheduler:
-    test.test_arbitrary_params:
-        type: interval
-        minutes: 1
-        args:
-            - positional_value_1
-            - positional_value_2
-        kwargs:
-            optional_param: optional_value
+  test.test_arbitrary_params:
+    type: interval
+    minutes: 1
+    args:
+      - positional_value_1
+      - positional_value_2
+    kwargs:
+      optional_param: optional_value
 ```
 The above configuration run `test_arbitrary_params` which will log any parameters passed to it. The above configuration will log: 
 `pargs=('positional_value_1', 'positional_value_2') kwargs={'optional_param': 'optional_value'}`
 
-# Persistent job store
-
-Using a persistent job store will allow the scheduler to track job execution time and determine if a job was missed across restarts. On the scheduler startup (which happens everytime docassemble restarts) if a job execution time was missed it will be rescheduled to run immediately. To use docassembles database as a persistent job store include `use docassemble database: True` like the below snippet.
-
-**WARNING:** It is disabled by default because the scheduler adds a new table to the docassemble database called "apscheduler_jobs". Which may cause unintended side effects when docassemble tries to upgrade/change its database structure. 
-```yml
-scheduler:
-  use docassemble database: True
-  test.heartbeat:
-    type: interval
-    minutes: 1
-```
 
 # Calling the same Function
 
@@ -179,6 +179,28 @@ scheduler:
 ```
 These two task are the same but will be logged as `postgres_db_backup.run 1` and `postgres_db_backup.run 2`. Any characters after the space are ignored and only used to differentiate the tasks in the scheduling system.
 
+# Custom Error Handler
+
+You may setup a custom error handler using `error handler` per job or for all jobs (which overrides the per job configuration).
+If your error handler raises an exception, or fails to be imported the default handler in scheduler_logger.my_error_notification will be used.
+
+Your error handler function will be passed `exception` and the `job` data, Example error handler
+
+```python
+def error_handler(ex, job: job_data.SchedulerJobConfig):
+  # job has these attributes:
+  # "name", "type", "params", "pargs", "kwargs", "contextmanager", "error_handler"
+  log(f"Scheduler Error with {job.name=} {job.}")
+```
+
+```yml
+scheduler:
+  error handler: some.error.handler
+  test.heartbeat:
+    type: interval
+        error handler: some.error.handler
+        minutes: 1
+```
 
 # Custom Context
 
@@ -187,15 +209,11 @@ Example Config:
 
 ```yml
 scheduler:
-    test.heartbeat:
-        type: interval
-        contextmanager: test_context.SchedulerContext
-        minutes: 1
-
+  test.heartbeat:
+    type: interval
+    contextmanager: test_context.SchedulerContext
+    minutes: 1
 ```
 It should be noted whether or not a custom context is supplied a context is already used which is provided by docassemble. It is the same context manager that is used for docassemble Celery tasks. See [the docassemble code here](https://github.com/jhpyle/docassemble/blob/2aa0178467e1902d2598d3066dfcca3308524da9/docassemble_webapp/docassemble/webapp/worker_common.py#L140)
 
-## Author
-
-System Administrator, admin@admin.com
 
