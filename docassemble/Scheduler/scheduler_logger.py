@@ -58,8 +58,8 @@ def log(msg, lvl="info"):
     global USING_SCHEDULE_LOGGER
     if not USING_SCHEDULE_LOGGER:
         # handle messages that are sent before the scheduler is setup
-        if worker_controller.loaded:
-            worker_controller.set_request_active(False)
+        # if worker_controller.loaded:
+        #     worker_controller.set_request_active(False)
         config_log_lvl = dict(daconfig).get("scheduler", {}).get("log level")
         if not config_log_lvl:
             config_log_lvl = "info"

@@ -94,7 +94,6 @@ scheduler:
 
 * `interval`: use when you want to run the job at fixed intervals of time
 * `cron`: use when you want to run the job periodically at certain time(s) of day
-* ~~`date`: use when you want to run the job just once at a certain point of time~~ **Not Supported**
   
 ## `Interval` Parameters
 
@@ -190,7 +189,7 @@ Your error handler function will be passed `exception` and the `job` data, Examp
 def error_handler(ex, job: job_data.SchedulerJobConfig):
   # job has these attributes:
   # "name", "type", "params", "pargs", "kwargs", "contextmanager", "error_handler"
-  log(f"Scheduler Error with {job.name=} {job.}")
+  log(f"Scheduler Error with {job.name=}: {ex.__class__.__name__}:{ex}")
 ```
 
 ```yml
