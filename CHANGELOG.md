@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [0.2.1](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.2.1) - 2024-09-09
+
+<small>[Compare with 0.2.0](https://github.com/dblevin1/docassemble-Scheduler/compare/0.2.0...0.2.1)</small>
+
+### Fixed
+
+- fix setting request context to False, causing non-scheduler log messages to not include user uid or interview name ([3054eac](https://github.com/dblevin1/docassemble-Scheduler/commit/3054eac4060c4a0ca320a3d8bf0dab3f53d18eff) by Daniel Blevins).
+
 ## [0.2.0](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.2.0) - 2024-08-15
 
 <small>[Compare with 0.1.15](https://github.com/dblevin1/docassemble-Scheduler/compare/0.1.15...0.2.0)</small>
