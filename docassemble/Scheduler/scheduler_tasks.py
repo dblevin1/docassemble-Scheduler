@@ -4,7 +4,7 @@ from flask import has_request_context
 from docassemble.base.config import daconfig
 
 from . import job_data
-from .job_data import SchedulerJobConfig, get_callable
+from .job_data import SchedulerJobConfig, get_callable, is_running, set_is_running
 from .scheduler_error_handler import handle_error
 from .scheduler_logger import log
 
@@ -22,6 +22,10 @@ def _call_job(job: SchedulerJobConfig):
 
 
 def call_uwsgi_registered_task(signum):
+    if is_running(signum):
+        log(f"Signal {signum} is already running, skipping", "debug")
+        return
+    log(f"Starting signal {signum}", "debug")
     job = job_data.registry[signum]
     job_data.current_job.signal_num = signum
     job_data.current_job.job_name = job.name
@@ -30,6 +34,7 @@ def call_uwsgi_registered_task(signum):
     app_ctx = None
     req_ctx = None
     try:
+        set_is_running(signum, True)
         if not has_request_context():
             from docassemble.base.functions import reset_local_variables
             from docassemble.webapp.server import app
@@ -52,7 +57,9 @@ def call_uwsgi_registered_task(signum):
     except Exception as ex:
         handle_error(ex, job)
     finally:
+        set_is_running(signum, False)
         if app_ctx:
             app_ctx.pop()
         if req_ctx:
             req_ctx.pop()
+    log(f"Finished signal {signum}", "debug")

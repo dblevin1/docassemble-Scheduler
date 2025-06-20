@@ -16,9 +16,25 @@ current_job = threading.local()
 current_job.job_name = None  # used by scheduler_logger
 current_job.signal_num = None
 current_job.job = None
+lock = threading.Lock()
+
+
+def is_running(signal_num: int) -> bool:
+    with lock:
+        return signal_num in running
+
+
+def set_is_running(signal_num: int, is_running: bool) -> None:
+    with lock:
+        if is_running:
+            running.add(signal_num)
+        else:
+            running.discard(signal_num)
+
 
 def get_cur_job() -> SchedulerJobConfig | None:
     return getattr(current_job, "job", None)
+
 
 def get_callable(name) -> Callable:
     name = str(name)
@@ -27,7 +43,7 @@ def get_callable(name) -> Callable:
     tasksdir = os.path.join(os.path.dirname(__file__), "tasks")
     name_list = name.split(".")
     if name_list[0] + ".py" in os.listdir(tasksdir):
-        name_module = f"{ SCHEDULER_PACKAGE }.tasks.{ name_list[0] }"
+        name_module = f"{SCHEDULER_PACKAGE}.tasks.{name_list[0]}"
         name_class = name_list[-1]
     else:
         name_class = name_list.pop(-1)
