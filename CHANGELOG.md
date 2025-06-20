@@ -1,6 +1,14 @@
 # Changelog
 
 <!-- insertion marker -->
+## [0.2.2](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.2.2) - 2025-06-20
+
+<small>[Compare with 0.2.1](https://github.com/dblevin1/docassemble-Scheduler/compare/0.2.1...0.2.2)</small>
+
+### Changed
+
+- change dont allow the same job to run at the same time ([829bf5f](https://github.com/dblevin1/docassemble-Scheduler/commit/829bf5fae73e0198298a803fac7b05d4c88d57ad) by Daniel Blevins).
+
 ## [0.2.1](https://github.com/dblevin1/docassemble-Scheduler/releases/tag/0.2.1) - 2024-09-09
 
 <small>[Compare with 0.2.0](https://github.com/dblevin1/docassemble-Scheduler/compare/0.2.0...0.2.1)</small>
